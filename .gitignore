@@ -1,1 +1,4 @@
 *.code-workspace
+build/
+dist
+pyqbclient.egg-info

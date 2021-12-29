@@ -27,22 +27,14 @@
 
 
 <!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/jeffmacd/pyqbclient">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
+
 
 <h3 align="center">pyqbclient</h3>
 
   <p align="center">
-    project_description
-    <br />
-    <a href="https://github.com/jeffmacd/pyqbclient"><strong>Explore the docs »</strong></a>
+    Simple Quickbase client module
     <br />
     <br />
-    <a href="https://github.com/jeffmacd/pyqbclient">View Demo</a>
-    ·
     <a href="https://github.com/jeffmacd/pyqbclient/issues">Report Bug</a>
     ·
     <a href="https://github.com/jeffmacd/pyqbclient/issues">Request Feature</a>
@@ -86,7 +78,7 @@
 
 A  module for interacting with the Quickbase API with an emphasis on
 being easy to use. Everywhere the API calls for record or field IDs I have
-changed it to work with values  or labels.
+changed it to work with values  or labels. Evolved from simple functions I wrote while getting started with python, has been useful for me, maybe you will find it useful as well.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -116,9 +108,18 @@ lxml (4.6.4+)
 
 ### Installation
 
-
-
-
+1: clone this repository
+```
+git clone https://github.com/jeffmacd/pyqbclient
+```
+2: cd into the new directory
+```
+cd pyqbclient
+```
+3: run setup
+```
+python setup.py install
+```
 
 
 
@@ -191,7 +192,7 @@ my_table_client = pyqbc.Client(my_table_id)
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of field labels corresponding to fields you wish to return, e.g ["Column A","Column B"]
 
 #### all_columns: *bool*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When True returns all fields as well as any built in field properties (versions, data created etc.)
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When True returns all fields as well as any properties of attachment/built in fields (versions, userName etc.)
 
 #### overwrite_df: *bool*, (optional)
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Overwrites the Client's DataFrame
@@ -458,7 +459,7 @@ Project Link: [https://github.com/jeffmacd/pyqbclient](https://github.com/jeffma
 [issues-shield]: https://img.shields.io/github/issues/jeffmacd/pyqbclient.svg?style=for-the-badge
 [issues-url]: https://github.com/jeffmacd/pyqbclient/issues
 [license-shield]: https://img.shields.io/github/license/jeffmacd/pyqbclient.svg?style=for-the-badge
-[license-url]: https://github.com/jeffmacd/pyqbclient/blob/master/LICENSE.txt
+[license-url]: https://github.com/jeffmacd/pyqbclient/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/jeff-macdonald-37202722a/
 [product-screenshot]: images/screenshot.png
