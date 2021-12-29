@@ -21,7 +21,6 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
@@ -458,7 +457,7 @@ Project Link: [https://github.com/jeffmacd/pyqbclient](https://github.com/jeffma
 [stars-url]: https://github.com/jeffmacd/pyqbclient/stargazers
 [issues-shield]: https://img.shields.io/github/issues/jeffmacd/pyqbclient.svg?style=for-the-badge
 [issues-url]: https://github.com/jeffmacd/pyqbclient/issues
-[license-shield]: https://img.shields.io/github/license/jeffmacd/pyqbclient.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/badge/License-MIT-yellow.svg
 [license-url]: https://github.com/jeffmacd/pyqbclient/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/jeff-macdonald-37202722a/
