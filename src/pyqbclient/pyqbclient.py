@@ -7,12 +7,9 @@ import requests
 import re
 from lxml import etree
 import logging
-from logging import NullHandler
-
-logging.getLogger(__name__).addHandler(NullHandler())
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("pyqbclient")
 
 
     
