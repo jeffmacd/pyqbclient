@@ -88,8 +88,6 @@ changed it to work with values  or labels. Evolved from simple functions I wrote
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
 
 ### Requirements
 Older versions of below untested, below known to work.
