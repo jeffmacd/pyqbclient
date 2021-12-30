@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
  
 setuptools.setup(
     name="pyqbclient",
-    version="0.0.6",
+    version="0.0.7",
     author="Jeff MacDonald",
     author_email="jeffmacd@protonmail.com",
     description="Quickbase API client module",

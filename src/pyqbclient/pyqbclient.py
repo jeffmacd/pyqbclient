@@ -603,7 +603,8 @@ class Client(object):
             response = self.json_request(
             body,'post','fields','response'
             )
-            logger.info(f'Added field {response["label"]} to {self.table_name}'
+            logger.info(f'''Added field "{response['label']}"'''
+            f' to {self.table_name}'
             )
             self.fetch_field_info()    
             return
@@ -663,7 +664,8 @@ class Client(object):
                         body,'post','fields','response'
                         )
                         logger.info(
-                        f'Added field {response["label"]} to {self.table_name}'
+                        f'''Added field "{response['label']}"'''
+                        f' to {self.table_name}'
                         )
                         
                     self.fetch_field_info()    
@@ -689,7 +691,8 @@ class Client(object):
                     body,'post','fields','response'
                     )
                     logger.info(
-                    f'Added field {response["label"]} to {self.table_name}'
+                    f'''Added field "{response['label']}"'''
+                    f' to {self.table_name}'
                     )
                 self.fetch_field_info()
                 return         

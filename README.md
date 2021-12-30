@@ -153,19 +153,19 @@ pyqbc.set_default(realm_hostname=my_realm,user_token=my_token)
 #### Parameters:
 
 #### table_id: *str*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The Table ID you want to create a client for
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The Table ID you want to create a client for**
 
 #### realm_hostname: *str*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Your quickbase realm hostname
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Your quickbase realm hostname**
 
 #### user_token: *str*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Your quickbase API user token
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Your quickbase API user token**
 
 #### retries: *int*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The amount of retries desired for any given request
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The amount of retries desired for any given request**
 
 #### dataframe: *pandas.DataFrame()*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The DataFrame associated with the Client, empty DataFrame passed so the editor knows it is a DataFrame.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The DataFrame associated with the Client, empty DataFrame passed so the editor knows it is a DataFrame.  **
   \
 Below we will instantiate our Client, relying on the defaults we set above
 ```
@@ -183,28 +183,31 @@ my_table_client = pyqbc.Client(my_table_id)
 #### Parameters:
 
 #### report: *str*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The name of a report you wish to download, e.g "List All"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The name of a report you wish to download, e.g "List All"**
 
 #### columns: *list*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of field labels corresponding to fields you wish to return, e.g ["Field1","Field2"]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A list of field labels corresponding to fields you wish to return, e.g ["Field1","Field2"]**
 
 #### all_columns: *bool*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When True returns all fields as well as any properties of attachment/built in fields (versions, userName etc.)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**When True returns all fields as well as any properties of attachment/built in fields (versions, userName etc.)**
 
 #### overwrite_df: *bool*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Overwrites the Client's DataFrame
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Overwrites the Client's DataFrame**
 
 #### return_copy: *bool*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a copy of the Client's DataFrame
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Returns a copy of the Client's DataFrame**
 
 #### filter_list_dict: *dict*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A means to look up a list of values. e.g. {'field_label': ['field_value_1','field_value_2']}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Query records based on a list of values. Takes a dictionary set up as below:**
+     {
+       'Field Label': ['Field_value_1','Field_value_2']
+     }
 
 #### where: *str*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Filter for queries using modified quickbase query language. Use the field label instead of the field ID, e.g. '{Record_ID#.EX.3}'
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Filter for queries using modified quickbase query language. Use the field label instead of the field ID, e.g. '{Record_ID#.EX.3}'**
 
 #### \*\*kwargs: * (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Valid kwargs are  sortBy and groupBy,  consult documentation for utilization
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Valid kwargs are  sortBy and groupBy,  consult documentation for utilization**
 
 #### Returns: DataFrame 
 \
@@ -229,27 +232,27 @@ _For more information on the query parameters, please refer to the [Documentatio
 #### Parameters:
 
 #### external_df: *DataFrame*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The DataFrame you wish to upload. Omitting uses the client's internal DataFrame
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The DataFrame you wish to upload. Omitting uses the client's internal DataFrame**
 
 #### step: *int*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The amount of records to upload at a time. Quickbase has an upper limit of 10 MB per call, 5k has been pretty safe so far for my use.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The amount of records to upload at a time. Quickbase has an upper limit of 10 MB per call, 5k has been pretty safe so far for my use.**
 
 #### merge: *str*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The label of the field you wish to merge on, must be a unique field. Updates where possible, creates where not.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The label of the field you wish to merge on, must be a unique field. Updates where possible, creates where not.**
 
 
 #### create_if_missing: *bool*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create fields in table for any columns in the DataFrame that are not present in the table.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Create fields in table for any columns in the DataFrame that are not present in the table.**
 
 #### exclude_columns: *list*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of columns in your DataFrame you do not wish to be uploaded
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A list of columns in your DataFrame you do not wish to be uploaded**
 
 #### subset: *list*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of columns in your DataFrame you wish to be uploaded while excluding all others (except merge if specified)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A list of columns in your DataFrame you wish to be uploaded while excluding all others (except merge if specified)**
  
 
 \
-Will upload records to the table based on the dataframe provided. Results are returned in logging.
+Will upload records to the table based on the DataFrame provided. Results are returned in logging.
 
 ```
 my_table_client.post_data(external_df=df)
@@ -263,17 +266,17 @@ my_table_client.post_data(external_df=df)
 #### Parameters:
 
 #### field_dict: *dict*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A Dictionary for field creation
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A Dictionary for field creation**
 
 #### external_df: *dict*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Create columns based on a DataFrame
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Create columns based on a DataFrame**
 
 #### ignore_errors: *bool*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ignore errors in creation and continue
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Ignore errors in creation and continue**
 
 
 #### appearsByDefault: *bool*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Whether or not this will be a default field
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Whether or not this will be a default field**
 
 
 Will create fields with the given arguments.
@@ -298,13 +301,13 @@ _For more examples, please refer to the [Documentation](https://developer.quickb
 
 
 #### field_label: *str*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The label of the field to update
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The label of the field to update**
 
 #### field_dict: *dict*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A dictionary for updating the field
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A dictionary for updating the field**
 
 #### \*\*kwargs:  (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Accepts label, noWrap, bold, required, appearsByDefault, findEnabled, unique, fieldHelp, addToForms, properties
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Accepts label, noWrap, bold, required, appearsByDefault, findEnabled, unique, fieldHelp, addToForms, properties**
 
 Will update fields with the given arguments
 
@@ -324,7 +327,7 @@ _For more examples, please refer to the [Documentation](https://developer.quickb
 
 
 #### field_labels: *list*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of field labels corresponding to fields 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A list of field labels corresponding to fields **
 
 
 Will delete the list of supplied fields
@@ -341,11 +344,11 @@ my_table_client.delete_fields(["Field1","Field2"])
 
 
 #### where: *str*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Filter for deletion using modified quickbase query language. Use the field label instead of the field ID, e.g. '{Record_ID#.EX.3}'
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Filter for deletion using modified quickbase query language. Use the field label instead of the field ID, e.g. '{Record_ID#.EX.3}'**
 
 
 #### all_records: *bool*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delete all records from the table
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Delete all records from the table**
 
 \
 Will delete indicated records from the table
@@ -367,10 +370,10 @@ my_table_client.delete_records(
 
 
 #### field_label: *str*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The label of the field we are uploading the file to
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The label of the field we are uploading the file to**
 
 #### file_dict: *dict*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A dictionary  setup as below:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **A dictionary  setup as below:**
         {'*Filename with extension*':
          {
             'merge_value': '*The value you are merging on*',
@@ -379,10 +382,10 @@ my_table_client.delete_records(
         }
 
 #### merge_field: *str*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The label of the field we are merging on
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The label of the field we are merging on**
 
 #### try_internal: *bool*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Whether or not we consult the Client's DataFrame for merge values.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Whether or not we consult the Client's DataFrame for merge values.**
 
 \
 Uploads files to the given file field based on a value in a unique field. 
