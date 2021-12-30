@@ -157,8 +157,8 @@ pyqbc.set_default(realm_hostname=my_realm,user_token=my_token)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The amount of retries desired for any given request**
 
 #### dataframe: *pandas.DataFrame()*
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The DataFrame associated with the Client, empty DataFrame passed so the editor knows it is a DataFrame.  **
-  \
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The DataFrame associated with the Client, empty DataFrame passed so the editor knows it is a DataFrame.**
+\
 Below we will instantiate our Client, relying on the defaults we set above
 ```
 my_table_id = 'example_table_id'
