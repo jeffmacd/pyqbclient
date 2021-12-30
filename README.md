@@ -186,7 +186,7 @@ my_table_client = pyqbc.Client(my_table_id)
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The name of a report you wish to download, e.g "List All"
 
 #### columns: *list*, (optional)
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of field labels corresponding to fields you wish to return, e.g ["Column A","Column B"]
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of field labels corresponding to fields you wish to return, e.g ["Field1","Field2"]
 
 #### all_columns: *bool*, (optional)
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When True returns all fields as well as any properties of attachment/built in fields (versions, userName etc.)
@@ -203,6 +203,8 @@ my_table_client = pyqbc.Client(my_table_id)
 #### where: *str*, (optional)
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Filter for queries using modified quickbase query language. Use the field label instead of the field ID, e.g. '{Record_ID#.EX.3}'
 
+#### \*\*kwargs: * (optional)
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Valid kwargs are  sortBy and groupBy,  consult documentation for utilization
 
 #### Returns: DataFrame 
 \
@@ -216,6 +218,8 @@ df = my_table_client.get_data(report='List All')
 Note: When called without any arguments returns default fields for all records\
 \
 _For more information on the quickbase query language, please refer to the [Documentation](https://help.quickbase.com/api-guide/componentsquery.html)_
+
+_For more information on the query parameters, please refer to the [Documentation](https://developer.quickbase.com/operation/runQuery)_
 
 
 ### post_data
@@ -244,6 +248,8 @@ _For more information on the quickbase query language, please refer to the [Docu
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of columns in your DataFrame you wish to be uploaded while excluding all others (except merge if specified)
  
 
+\
+Will upload records to the table based on the dataframe provided. Results are returned in logging.
 
 ```
 my_table_client.post_data(external_df=df)
@@ -268,6 +274,9 @@ my_table_client.post_data(external_df=df)
 
 #### appearsByDefault: *bool*
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Whether or not this will be a default field
+
+
+Will create fields with the given arguments.
 
 ```
 field_dict = {
@@ -297,6 +306,8 @@ _For more examples, please refer to the [Documentation](https://developer.quickb
 #### \*\*kwargs:  (optional)
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Accepts label, noWrap, bold, required, appearsByDefault, findEnabled, unique, fieldHelp, addToForms, properties
 
+Will update fields with the given arguments
+
 ```
 my_table_client.update_field("Field1",unique=True)
 ```
@@ -313,7 +324,10 @@ _For more examples, please refer to the [Documentation](https://developer.quickb
 
 
 #### field_labels: *list*
-##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of field labels for fields we wish  to delete
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A list of field labels corresponding to fields 
+
+
+Will delete the list of supplied fields
 
 ```
 my_table_client.delete_fields(["Field1","Field2"])
@@ -333,6 +347,9 @@ my_table_client.delete_fields(["Field1","Field2"])
 #### all_records: *bool*, (optional)
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delete all records from the table
 
+\
+Will delete indicated records from the table
+\
 NOTE: One of where or all_records must be passed as an argument. Former default behaviour was to delete all records without an argument, thought it better to be explicit
 
 ```
@@ -367,27 +384,18 @@ my_table_client.delete_records(
 #### try_internal: *bool*
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Whether or not we consult the Client's DataFrame for merge values.
 
-
+\
+Uploads files to the given field based on a value in a unique field.
 Example usage below
 
 ```
-# Create a bar chart
-plt.bar(df['Field1'], df['Field2'])
 
-# Create file like object
-pic_IObytes = io.BytesIO()
-
-# Save bar chart as file like object
-plt.savefig(pic_IObytes,  format='png')
-pic_IObytes.seek(0)
-
-# Encode in Base64
-pic_hash = base64.b64encode(pic_IObytes.read()).decode()
+picture_hash = base64.b64encode(picture_IObytes.read()).decode()
 
 
 file_dict = {
     'pic.png': {
-    'file_str': pic_hash,
+    'file_str': picture_hash,
     'merge_value': 49
     }
 }

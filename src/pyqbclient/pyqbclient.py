@@ -438,10 +438,8 @@ class Client(object):
         """Queries data from a quickbase table"""
 
         valid_kwargs = [
-        'options',
         'sortBy',
-        'groupBy',
-        'select'
+        'groupBy'
         ]
         body = {"from":self.table_id}
         if report:
@@ -467,6 +465,7 @@ class Client(object):
                     body['groupBy'] = v['groupBy']
 
 
+
         if columns:
             try:
                 body['select'] = [self.column_dict[c] for c in columns]
@@ -484,16 +483,16 @@ class Client(object):
             body['where']  = self.get_filter(where)
         
 
-        if isinstance(report,type(None)):
-            invalid_kwargs = []
-            for kw in kwargs:
-                if kw  in valid_kwargs:
-                    body[kw] = kwargs[kw]
-                else:
-                    invalid_kwargs.append(kw)
+  
+        invalid_kwargs = []
+        for kw in kwargs:
+            if kw  in valid_kwargs:
+                body[kw] = kwargs[kw]
+            else:
+                invalid_kwargs.append(kw)
 
-            if len(invalid_kwargs)>0:
-                raise ValueError(f'Invalid Kwargs {", ".join(invalid_kwargs)}')
+        if len(invalid_kwargs)>0:
+            raise ValueError(f'Invalid Kwargs {", ".join(invalid_kwargs)}')
 
         if isinstance(filter_list_dict, dict):
             df_list = []
@@ -887,7 +886,7 @@ class Client(object):
             updated += len(metadata['updatedRecordIds'])
       
             if response.status_code == 200:
-                err_code = 'Request ' + str(req_nr) + ': 0 no error \n'
+                logger.debug(f'Request {req_nr}: 0 no error')
             elif response.status_code == 207:
                 count_dict={}
                 for k,v in metadata["lineErrors"].items():
@@ -911,7 +910,7 @@ class Client(object):
                 f'{json.dumps(response.json())["description"]} \n')
             req_nr += 1
         
-        # sleep(0.05)
+
         logger.info(f'Uploaded {processed} records to {self.table_name}, '
         f'created: {created}, unchanged: {unchanged}, updated: {updated}, '
         f'failed: {failed}'
