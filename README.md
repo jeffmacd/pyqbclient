@@ -385,7 +385,12 @@ my_table_client.delete_records(
 ##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Whether or not we consult the Client's DataFrame for merge values.
 
 \
-Uploads files to the given field based on a value in a unique field.
+Uploads files to the given file field based on a value in a unique field. 
+When called, will create a dictionary using the supplied unique field 
+and built in Record ID# to facilitate the upload. try_internal will attempt
+to use the Client's DataFrame before resorting to downloading from the table.
+
+\
 Example usage below
 
 ```

@@ -22,6 +22,9 @@ class Error(Exception):
         self.desc = code
         self.response = response
 
+    def __str__(self):
+        return f'{self.msg}: {self.desc}'
+
 
 
 class ResponseError(Error):
@@ -73,7 +76,7 @@ class Client(object):
 
     def set_retries(self,retries):
         if retries < 0:
-            raise ValueError('Retries must be 0 or greater.')
+            raise ValueError('Retries must be 0 or greater')
         self.retries = retries
     
     def json_request(self,body,request_type,
@@ -138,7 +141,7 @@ class Client(object):
              
 
             except QuickBaseError:
-                logger.critical(QuickBaseError,exc_info=True)
+                logger.critical('Quickbase Error')
                 raise
             except Exception as e:    
                 if attempt < self.retries:
@@ -380,7 +383,7 @@ class Client(object):
         self.reports = self.get_reports()
         self.valid_reports = self.get_valid_reports()
         self.merge_dicts = {}
-        logger.info(f'Created Client for table "{self.table_name}".')
+        logger.info(f'Created Client for table "{self.table_name}"')
         
     
 
@@ -559,7 +562,7 @@ class Client(object):
 
 
         result = pd.concat(df_list)
-        logger.info(f'Retrieved {retrieved} records from {self.table_name}.')
+        logger.info(f'Retrieved {retrieved} records from {self.table_name}')
         result.columns = result.columns.to_series().map(self.rename_dict)
         if retrieved > 0:
             if columns:
@@ -589,7 +592,7 @@ class Client(object):
         'int32': 'numeric'
         }
 
-        logger.info('Preparing to create fields.')
+        logger.info('Preparing to create fields')
 
 
         
@@ -646,7 +649,7 @@ class Client(object):
                     for k,v in counter_dict.items():
                         logger.warn(
                             f'Unknown Pandas datatype {v} for column {k},'
-                            f' field not created.'
+                            f' field not created'
                         )
                         unknown_dict.pop(k)
                     for k,v in unknown_dict.items():
@@ -672,7 +675,7 @@ class Client(object):
                 for k,v in counter_dict.items():
                     logger.warn(
                     f'Unknown Pandas datatype {v} for column {k},'
-                    f' field not created.'
+                    f' field not created'
                     )
             else:
                 for k,v in unknown_dict.items():
@@ -692,7 +695,7 @@ class Client(object):
                 return         
         else:
             
-            logger.info('No unknown fields found.')
+            logger.info('No unknown fields found')
 
     def update_field(self,field_label,field_dict = None,**kwargs):
         """
@@ -837,7 +840,7 @@ class Client(object):
         if len(unknown_columns) >= 1:
             logger.warn(f'Discovered unknown column(s) '
             f'''"{'", "'.join(unknown_columns)}".'''
-            ' Unknown columns were dropped.'
+            ' Unknown columns were dropped'
             )
             self.dataframe.drop(labels=unknown_columns, axis=1, inplace=True)
         
@@ -943,7 +946,7 @@ class Client(object):
         )
 
         logger.info(
-        f'Deleted {response["numberDeleted"]} records from {self.table_name}.'
+        f'Deleted {response["numberDeleted"]} records from {self.table_name}'
         )
 
 
@@ -971,6 +974,9 @@ class Client(object):
                 )
                 return
             else:
+                logger.info(
+                'Downloading required fields to upload files'
+                )
                 merge_df = self.get_data(
                 columns=[record_label],
                 overwrite_df=False,
@@ -996,7 +1002,9 @@ class Client(object):
                 f'Created merge dict for {merge_field}'
                 )
                 return
-
+        logger.info(
+        'Downloading required fields to upload files'
+        )
         merge_df = self.get_data(
         columns=[merge_field,record_label],
         overwrite_df=False,
@@ -1056,4 +1064,4 @@ class Client(object):
             response = self.xml_request('API_EditRecord',data)
             uploaded_files +=1
         
-        logger.info(f'Uploaded {uploaded_files} files to {self.table_name}.')
+        logger.info(f'Uploaded {uploaded_files} files to {self.table_name}')
