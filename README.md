@@ -105,17 +105,9 @@ lxml (4.6.4+)
 
 ### Installation
 
-1: clone this repository
+1: Can be installed using pip
 ```
-git clone https://github.com/jeffmacd/pyqbclient
-```
-2: cd into the new directory
-```
-cd pyqbclient
-```
-3: run setup
-```
-python setup.py install
+pip install pyqbclient
 ```
 
 
