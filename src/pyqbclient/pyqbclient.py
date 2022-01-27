@@ -80,7 +80,7 @@ class Client(object):
         self.retries = retries
     
     def json_request(self,body,request_type,
-    api_type,return_type,sub_url=None,chunk=1):
+    api_type,return_type,sub_url=None):
 
         url =f'https://api.quickbase.com/v1/{api_type}'
         if  not isinstance(sub_url,type(None)):
@@ -194,7 +194,7 @@ class Client(object):
 
     def get_column_dict(self):
         pared_fields = self.field_data.loc[:,['id','label',]].copy()
-        pared_fields.loc[:,'id'] = pared_fields.loc[:,'id'].astype(str) + '.value'
+        pared_fields.loc[:,'id'] = pared_fields.loc[:,'id']
         column_dict  = pared_fields.set_index('label').to_dict()['id']
         
         return column_dict 
@@ -445,6 +445,8 @@ class Client(object):
         'groupBy'
         ]
         body = {"from":self.table_id}
+        # Without a default sort order does not behave as expected
+        body['sortBy'] = [{'fieldId': 2, 'order': 'DESC'}]
         if report:
             if any([filter_list_dict,columns,all_columns,where,kwargs]):
                 raise ValueError(
@@ -484,6 +486,7 @@ class Client(object):
             if not isinstance(report, type(None)):
                 raise ValueError('Can not specify where with a report')
             body['where']  = self.get_filter(where)
+
         
 
   
@@ -506,8 +509,6 @@ class Client(object):
                 list_length = len(v)
                 iter_np = np.arange(0, list_length, 100)
                 iter = list(iter_np)
-                
-                chunk = 1
                 for i in iter:
                     slice = _slice_list(i,v)
                     body['where'] = self.get_filter(self.gen_filter_from_list(
@@ -519,17 +520,15 @@ class Client(object):
                     'post',
                     'records',
                     'dataframe',
-                    'query',
-                    chunk
+                    'query'
                     )
                     df_list.append(df)
                     retrieved += metadata['numRecords']
-                    chunk += 1
+
             
         else:
             df_list = []
             retrieved = 0 
-
             df, metadata = self.json_request(
             body,
             'post',
@@ -537,21 +536,18 @@ class Client(object):
             'dataframe',
             'query'
             )
-            chunk = 1
             df_list.append(df)
             retrieved = metadata['numRecords']
             if metadata['totalRecords'] > metadata['numRecords']:
                 body['options'] = {"skip": retrieved}
                 remaining = metadata['totalRecords'] -  metadata['numRecords']
                 while remaining > 0:
-                    chunk += 1
                     df, metadata = self.json_request(
                     body,
                     'post',
                     'records',
                     'dataframe',
-                    'query',
-                    chunk
+                    'query'
                     )
                     retrieved += metadata['numRecords']
                     remaining = metadata['totalRecords'] - retrieved
@@ -589,7 +585,8 @@ class Client(object):
         'datetime64[ns]': 'datetime',
         'object': 'text',
         'bool': 'checkbox',
-        'int32': 'numeric'
+        'int32': 'numeric',
+        'UInt32': 'numeric'
         }
 
         logger.info('Preparing to create fields')
@@ -882,8 +879,7 @@ class Client(object):
             data,
             'post',
             'records',
-            'unparsed',
-            chunk=req_nr
+            'unparsed'
             )
             metadata = json.loads(response.text)['metadata']
             processed  += metadata['totalNumberOfRecordsProcessed']
