@@ -68,7 +68,10 @@
   </ol>
 </details>
 
-
+## Version 1.0.1
+* Fixed a bug with columns in get_data
+* Added support for UInt32
+* Set a default sort option on queries as paginated queries were returning duplicates without it
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
