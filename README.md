@@ -68,6 +68,12 @@
   </ol>
 </details>
 
+## Version 1.0.2
+* Fixed an issue with columns in get_data where specifying a column with only sub columns would cause an Exception
+* Added Type Hinting
+* Added some docstrings
+* Added a datatype
+
 ## Version 1.0.1
 * Fixed a bug with columns in get_data
 * Added support for UInt32

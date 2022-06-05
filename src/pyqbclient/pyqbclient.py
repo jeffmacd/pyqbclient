@@ -7,6 +7,7 @@ import requests
 import re
 from lxml import etree
 import logging
+from typing import Union, Tuple
 
 
 logger = logging.getLogger("pyqbclient")
@@ -38,22 +39,37 @@ class QuickBaseError(Error):
 default_realm_hostname = None
 default_user_token = None
 
-def set_default(realm_hostname=None,user_token=None):
+def set_default(realm_hostname: str=None,user_token:str =None) -> None:
+    '''
+    Set default realm hostname and uder token for use by the Client
+    '''
     global default_realm_hostname
     global default_user_token
 
     default_realm_hostname = realm_hostname
     default_user_token = user_token
 
-def _slice_list(start_line,filter_list):
+def _slice_list(start_line: int,filter_list: list):
+    '''
+    The Quickbase API allows filtering by 100 values, this enables that
+    '''
     end_line = start_line + 100
     slice = filter_list[start_line:end_line:]
     return slice  
 
 
 class Client(object):
+    '''
+    A client object for interacting with a Quickbase Table
+    '''
 
-    def check_defaults(self,realm_hostname,user_token):
+    def check_defaults(self, realm_hostname: str, user_token: str) -> None:
+        '''
+        Function that checks for default host and user token, raises an 
+        Exception if there has not been either a default set or a value 
+        provided on Client instantiation
+        '''
+
         if default_realm_hostname == None:
             if realm_hostname == None:
                 raise ValueError('Must provide a realm hostname')
@@ -74,13 +90,21 @@ class Client(object):
             else:
                 self.user_token = f'QB-USER-TOKEN {default_user_token}'
 
-    def set_retries(self,retries):
+    def set_retries(self, retries: int) -> None:
+        '''
+        Sets the amount of times any given transaction will be re-attempted
+        '''
         if retries < 0:
             raise ValueError('Retries must be 0 or greater')
         self.retries = retries
     
-    def json_request(self,body,request_type,
-    api_type,return_type,sub_url=None):
+    def json_request(self, body: str, request_type: str,
+    api_type: str, return_type: str, sub_url: str=None) -> Union[requests.Response,
+    pd.DataFrame, dict, Tuple[pd.DataFrame,dict]]:
+        '''
+        Make a JSON request to the JSON API. This function is probably overloaded.
+        Too late now.        
+        '''
 
         url =f'https://api.quickbase.com/v1/{api_type}'
         if  not isinstance(sub_url,type(None)):
@@ -174,13 +198,21 @@ class Client(object):
         
 
     
-    def get_fields(self):
+    def get_fields(self) -> dict:
+        '''
+        Function to get available fields from the table you are instantiating 
+        the Client for
+        '''
 
         params = self.base_params
         params['includeFieldPerms'] = 'false'
         return self.json_request(None,'get','fields','properties') 
 
-    def get_reports(self):
+    def get_reports(self) -> dict:
+        '''
+        Function to get available reports from the table you are instantiating 
+        the Client for
+        '''
         
         return self.json_request(
         None,
@@ -188,25 +220,39 @@ class Client(object):
         'reports',
         'properties'
         )  
-    def get_valid_reports(self):
+
+    def get_valid_reports(self) -> list:
+        '''
+        Parse the available reports for table type reports
+        '''
         return     self.reports.loc[
         self.reports['type'].eq('table'),'name'].to_list()
 
-    def get_column_dict(self):
+    def get_column_dict(self) -> dict:
+        '''
+        Get a dictionary of field labels to field ids
+        '''
         pared_fields = self.field_data.loc[:,['id','label',]].copy()
         pared_fields.loc[:,'id'] = pared_fields.loc[:,'id']
         column_dict  = pared_fields.set_index('label').to_dict()['id']
         
         return column_dict 
 
-    def get_label_dict(self):
+    def get_label_dict(self) -> dict:
+        '''
+        Get a dictionary of field ids to field labels
+        '''
         pared_fields = self.field_data.loc[:,['id','label',]].copy()
         pared_fields.loc[:,'id'] = pared_fields.loc[:,'id'].astype(str) + '.value'
         label_dict = pared_fields.set_index('id').to_dict()['label']
         
         return label_dict 
 
-    def get_rename_dict(self):
+    def get_rename_dict(self) -> dict:
+        '''
+        Returns dictionary  for renaming query results using field labels, 
+        handling sub fields
+        '''
         labels =list(self.label_dict.keys())
         values = list(self.label_dict.values())
         rename_dict = self.label_dict.copy()
@@ -227,8 +273,12 @@ class Client(object):
                 ] = f'{values[i]} - {sub_values[j]}'
           
         return rename_dict
-    def get_inv_label_dict(self):
 
+    def get_inv_label_dict(self) -> dict:
+        '''
+        Returns dictionary  for renaming query field labels as field ids 
+        for use in querying 
+        '''
         inv_label_dict = {
         v: str(k).replace('.value','') for k, v in self.label_dict.items()
         }
@@ -237,7 +287,10 @@ class Client(object):
         
 
 
-    def get_base_xml_request(self):
+    def get_base_xml_request(self) -> None:
+        '''
+        Sets base XML request parameters for the Client
+        '''
         request = {}
         request['encoding'] = 'UTF-8'
         request['msInUTC'] = 1
@@ -245,7 +298,10 @@ class Client(object):
         request['apptoken'] = self.user_token
         self.base_xml_request = request
 
-    def get_base_xml_headers(self):
+    def get_base_xml_headers(self) -> None:
+        '''
+        Sets base XML headers for the Client
+        '''
         self.base_xml_headers = {
         'User-Agent': '{User-Agent}',
         'Authorization': self.user_token,
@@ -253,6 +309,9 @@ class Client(object):
         }
     
     def get_xml_url(self):
+        '''
+        Sets XML URL for the Client
+        '''
         self.xml_url = f'https://{self.realm_hostname}/db/{self.table_id}'
 
     def build_request(self,**request_fields):
@@ -291,10 +350,14 @@ class Client(object):
 
 
 
+    def xml_request(self, action: str, data: str, 
+    stream: bool=True) -> etree.Element:
+        '''
+        Function to make XML requests against the XML API. Included because 
+        the JSON API did not provide a convenient method to get the table name 
+        knowing only the table id nor a method to upload files that I could figure out.
+        '''
 
-
-    def xml_request(self,action,data,stream=True):
-                # Do the POST request with additional QuickBase headers
 
         headers = self.base_xml_headers
         headers['QUICKBASE-ACTION'] = action
@@ -352,14 +415,9 @@ class Client(object):
         self.rename_dict = self.get_rename_dict()
         self.inv_label_dict = self.get_inv_label_dict()
 
-    def __init__(
-        self,
-        table_id,
-        realm_hostname=None,
-        user_token=None,
-        retries=3,
-        dataframe=pd.DataFrame()
-    ):
+    def __init__(self, table_id: str, realm_hostname: str=None,
+    user_token: str=None, retries: int=3, 
+    dataframe: pd.DataFrame=pd.DataFrame()) -> None:
         self.table_id = table_id
         self.base_params = {
             'tableId': self.table_id
@@ -422,7 +480,11 @@ class Client(object):
         return filter_criteria
 
 
-    def gen_filter_from_list(self,filter_list,filter_list_label):
+    def gen_filter_from_list(self, filter_list: list, 
+    filter_list_label: str) -> str:
+        '''
+        Translates filters with labels to filters with ids
+        '''
         where_str = f'{{{filter_list_label}.EX."' 
         join_str = f'"}}OR{{{filter_list_label}.EX."'
         return f'{where_str}{join_str.join(filter_list)}"}}'
@@ -435,10 +497,15 @@ class Client(object):
     
 
 
-    def get_data(self,report=None,columns=None,all_columns=False,
-    overwrite_df=True,return_copy=True,filter_list_dict=None,where=None,
-    **kwargs):
-        """Queries data from a quickbase table"""
+    def get_data(self, report: str=None, columns: list=None, 
+    all_columns: bool=False, overwrite_df: bool=True, return_copy: bool=True,
+    filter_list_dict: dict=None, where: str=None, **kwargs) -> pd.DataFrame:
+        '''
+        Queries data from a quickbase table and returns a DataFrame. Primarily 
+        because I wanted to upload files I gave the Client itself a DataFrame, 
+        which in hindsight was perhaps not the best idea. 
+        
+        '''
 
         valid_kwargs = [
         'sortBy',
@@ -560,9 +627,7 @@ class Client(object):
         result = pd.concat(df_list)
         logger.info(f'Retrieved {retrieved} records from {self.table_name}')
         result.columns = result.columns.to_series().map(self.rename_dict)
-        if retrieved > 0:
-            if columns:
-                result = result[columns]
+
         if overwrite_df  == True:
             self.dataframe = result
         if return_copy == True:
@@ -572,13 +637,20 @@ class Client(object):
 
 
 
-    def create_fields(self,field_dict=None,external_df=None,
-    ignore_errors=False, appearsByDefault=True
-    ):
+    def create_fields(self, field_dict: dict=None, 
+    external_df: pd.DataFrame=None, ignore_errors: bool=False, 
+    appearsByDefault: bool=True) -> None:
         """
-        Creates a field. Can create based on columns in a dataframe or based on
-        a field_dict of desired attributes.
+        Creates a field on a quickbase table. Can create based on columns 
+        in a DataFrame or based on a field_dict of desired attributes.
+        
+        Note that my DataFrame implementation depends on my having mapped a 
+        pandas Data Type to an equivalent Quickbase Data type and the mapping 
+        I have done is nowhere near exhaustive. If you want to be sure that a 
+        field gets created when uploading a DataFrame, create it explicitly 
+        prior to uploading the DataFrame using a field_dict.
         """
+
         type_dict = {
         'float64': 'numeric',
         'int64': 'numeric',
@@ -586,7 +658,8 @@ class Client(object):
         'object': 'text',
         'bool': 'checkbox',
         'int32': 'numeric',
-        'UInt32': 'numeric'
+        'UInt32': 'numeric',
+        'Int32': 'numeric'
         }
 
         logger.info('Preparing to create fields')
@@ -697,10 +770,13 @@ class Client(object):
             
             logger.info('No unknown fields found')
 
-    def update_field(self,field_label,field_dict = None,**kwargs):
-        """
+    def update_field(self, field_label: str, field_dict: dict=None,
+    **kwargs) -> None:
+        '''
         Update field attributes using field_dict or using key word arguments
-        """
+        '''
+
+
         valid_args = [
         "label", "noWrap", "bold", "required", "appearsByDefault",
         "findEnabled", "unique", "fieldHelp", "addToForms", "properties"
@@ -754,10 +830,10 @@ class Client(object):
         )
         self.fetch_field_info()
 
-    def delete_fields(self,field_labels):
-        """
+    def delete_fields(self, field_labels: list) -> None:
+        '''
         Delete a list of fields. Takes in field labels.
-        """
+        '''
 
         if not isinstance(field_labels,list):
             raise ValueError('Must supply a list of field labels to delete')
@@ -795,15 +871,20 @@ class Client(object):
         self.fetch_field_info() 
         
 
-    def slice_df(self, start_line,step=5000):
+    def slice_df(self, start_line: int,step: int=5000):
+        '''
+        Return a slice of the Client's DataFrame to facilitate uploads
+        '''
+
         end_line = start_line + step
         slice = self.dataframe.iloc[start_line:end_line,:]
         return slice
 
-    def post_data(self,external_df=None,step=5000, merge=None,
-        create_if_missing=False, exclude_columns=None, subset=None):
+    def post_data(self, external_df: pd.DataFrame=None, step: int=5000, 
+    merge: str=None, create_if_missing: bool=False, 
+    exclude_columns: list=None, subset: list=None) -> None:
         """
-        Upload data to quickbase
+        Upload a DataFrame to a quickbase table
         """
 
         if  isinstance(external_df, pd.DataFrame):
@@ -918,7 +999,11 @@ class Client(object):
         f'failed: {failed}'
         )
 
-    def delete_records(self,where=None,all_records=False):
+    def delete_records(self, where: str=None, all_records: bool=False) -> None:
+        '''
+        Delete records from a Quickbase table
+        '''
+
         if where == None:
             if all_records == False:
                 raise ValueError(
@@ -952,9 +1037,9 @@ class Client(object):
 
 
 
-    def get_merge_dict(self,merge_field,try_internal):
+    def get_merge_dict(self, merge_field: str, try_internal: bool) -> None:
         """
-        Translation function for uploading files
+        Creates a dictionary for use in uploading files
         """
 
 
@@ -1020,8 +1105,8 @@ class Client(object):
 
 
             
-    def upload_files(self,field_label, file_dict,
-    merge_field,try_internal=True):
+    def upload_files(self, field_label: str, file_dict: dict,
+    merge_field: str, try_internal: bool=True) -> None:
         """
         Upload files to existing records, merging on a value in a unique field.
         file_dict is a dictionary  setup like so :
