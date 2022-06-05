@@ -3,3 +3,4 @@ build/
 dist
 pyqbclient.egg-info
 pyproject.toml
+1.0.*/
