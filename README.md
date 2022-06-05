@@ -31,7 +31,7 @@
 <h3 align="center">pyqbclient</h3>
 
   <p align="center">
-    Simple Quickbase client module
+    Simple Quickbase Table client module
     <br />
     <br />
     <a href="https://github.com/jeffmacd/pyqbclient/issues">Report Bug</a>
@@ -84,7 +84,7 @@
 
 
 
-A  module for interacting with the Quickbase API with an emphasis on
+A  module for interacting with the Quickbase tables  via the API with an emphasis on
 being easy to use. Everywhere the API calls for record or field IDs I have
 changed it to work with values  or labels. Evolved from simple functions I wrote while getting started with python, has been useful for me, maybe you will find it useful as well.
 

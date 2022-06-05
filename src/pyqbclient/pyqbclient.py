@@ -39,7 +39,7 @@ class QuickBaseError(Error):
 default_realm_hostname = None
 default_user_token = None
 
-def set_default(realm_hostname: str=None,user_token:str =None) -> None:
+def set_default(realm_hostname: str=None, user_token:str =None) -> None:
     '''
     Set default realm hostname and uder token for use by the Client
     '''
