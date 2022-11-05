@@ -1,3 +1,4 @@
+from __future__ import annotations
 import json
 import numpy as np
 import requests
@@ -8,6 +9,7 @@ import re
 from lxml import etree
 import logging
 from typing import Union, Tuple
+import time
 
 
 logger = logging.getLogger("pyqbclient")
@@ -63,7 +65,7 @@ class Client(object):
     A client object for interacting with a Quickbase Table
     '''
 
-    def check_defaults(self, realm_hostname: str, user_token: str) -> None:
+    def _check_defaults(self, realm_hostname: str, user_token: str) -> None:
         '''
         Function that checks for default host and user token, raises an 
         Exception if there has not been either a default set or a value 
@@ -90,7 +92,7 @@ class Client(object):
             else:
                 self.user_token = f'QB-USER-TOKEN {default_user_token}'
 
-    def set_retries(self, retries: int) -> None:
+    def _set_retries(self, retries: int) -> None:
         '''
         Sets the amount of times any given transaction will be re-attempted
         '''
@@ -98,7 +100,7 @@ class Client(object):
             raise ValueError('Retries must be 0 or greater')
         self.retries = retries
     
-    def json_request(self, body: str, request_type: str,
+    def _json_request(self, body: str, request_type: str,
     api_type: str, return_type: str, sub_url: str=None) -> Union[requests.Response,
     pd.DataFrame, dict, Tuple[pd.DataFrame,dict]]:
         '''
@@ -144,8 +146,6 @@ class Client(object):
                 
                 response = json.loads(r.text)
                 
-          
-
 
                 if request_type != 'get': 
                     if "message" in response.keys():
@@ -171,7 +171,7 @@ class Client(object):
                 if attempt < self.retries:
                     logger.error(e)
                     logger.info(f'Retrying  - Attempt {attempt +1}')
-
+                    time.sleep(10)
                     continue
                 else:
                     logger.critical(e)
@@ -198,7 +198,7 @@ class Client(object):
         
 
     
-    def get_fields(self) -> dict:
+    def _get_fields(self) -> dict:
         '''
         Function to get available fields from the table you are instantiating 
         the Client for
@@ -206,29 +206,29 @@ class Client(object):
 
         params = self.base_params
         params['includeFieldPerms'] = 'false'
-        return self.json_request(None,'get','fields','properties') 
+        return self._json_request(None,'get','fields','properties') 
 
-    def get_reports(self) -> dict:
+    def _get_reports(self) -> dict:
         '''
         Function to get available reports from the table you are instantiating 
         the Client for
         '''
         
-        return self.json_request(
+        return self._json_request(
         None,
         'get',
         'reports',
         'properties'
         )  
 
-    def get_valid_reports(self) -> list:
+    def _get_valid_reports(self) -> list:
         '''
         Parse the available reports for table type reports
         '''
         return     self.reports.loc[
         self.reports['type'].eq('table'),'name'].to_list()
 
-    def get_column_dict(self) -> dict:
+    def _get_column_dict(self) -> dict:
         '''
         Get a dictionary of field labels to field ids
         '''
@@ -238,7 +238,7 @@ class Client(object):
         
         return column_dict 
 
-    def get_label_dict(self) -> dict:
+    def _get_label_dict(self) -> dict:
         '''
         Get a dictionary of field ids to field labels
         '''
@@ -248,7 +248,7 @@ class Client(object):
         
         return label_dict 
 
-    def get_rename_dict(self) -> dict:
+    def _get_rename_dict(self) -> dict:
         '''
         Returns dictionary  for renaming query results using field labels, 
         handling sub fields
@@ -274,7 +274,7 @@ class Client(object):
           
         return rename_dict
 
-    def get_inv_label_dict(self) -> dict:
+    def _get_inv_label_dict(self) -> dict:
         '''
         Returns dictionary  for renaming query field labels as field ids 
         for use in querying 
@@ -287,7 +287,7 @@ class Client(object):
         
 
 
-    def get_base_xml_request(self) -> None:
+    def _get_base_xml_request(self) -> None:
         '''
         Sets base XML request parameters for the Client
         '''
@@ -298,7 +298,7 @@ class Client(object):
         request['apptoken'] = self.user_token
         self.base_xml_request = request
 
-    def get_base_xml_headers(self) -> None:
+    def _get_base_xml_headers(self) -> None:
         '''
         Sets base XML headers for the Client
         '''
@@ -308,13 +308,13 @@ class Client(object):
         'Content-Type': 'application/xml'
         }
     
-    def get_xml_url(self):
+    def _get_xml_url(self):
         '''
         Sets XML URL for the Client
         '''
         self.xml_url = f'https://{self.realm_hostname}/db/{self.table_id}'
 
-    def build_request(self,**request_fields):
+    def _build_request(self,**request_fields) -> str:
         r"""Build QuickBase request XML with given fields. Fields can be straight
         key=value, or if value is a 2-tuple it represents (attr_dict, value), or if
         value is a list of values or 2-tuples the output will contain multiple entries.
@@ -350,7 +350,7 @@ class Client(object):
 
 
 
-    def xml_request(self, action: str, data: str, 
+    def _xml_request(self, action: str, data: str, 
     stream: bool=True) -> etree.Element:
         '''
         Function to make XML requests against the XML API. Included because 
@@ -400,20 +400,20 @@ class Client(object):
 
 
 
-    def get_table_name(self):
+    def _get_table_name(self) -> str:
         """Performs get schema on XML API to extract table name"""
         request = self.base_xml_request
-        data = self.build_request(**request)
-        response = self.xml_request('API_GetSchema', data)
+        data = self._build_request(**request)
+        response = self._xml_request('API_GetSchema', data)
         return response.xpath('//table/name')[0].text
     
-    def fetch_field_info(self):
+    def _fetch_field_info(self) -> None:
         """ Updates field information and dictionaries for translation"""
-        self.field_data = self.get_fields()
-        self.column_dict = self.get_column_dict()
-        self.label_dict = self.get_label_dict()
-        self.rename_dict = self.get_rename_dict()
-        self.inv_label_dict = self.get_inv_label_dict()
+        self.field_data = self._get_fields()
+        self.column_dict = self._get_column_dict()
+        self.label_dict = self._get_label_dict()
+        self.rename_dict = self._get_rename_dict()
+        self.inv_label_dict = self._get_inv_label_dict()
 
     def __init__(self, table_id: str, realm_hostname: str=None,
     user_token: str=None, retries: int=3, 
@@ -424,8 +424,8 @@ class Client(object):
         }
         self.base_json_url = 'https://api.quickbase.com/v1/'
 
-        self.check_defaults(realm_hostname,user_token)
-        self.set_retries(retries)
+        self._check_defaults(realm_hostname,user_token)
+        self._set_retries(retries)
         self.dataframe = dataframe
         self.headers = {
             'QB-Realm-Hostname': self.realm_hostname,
@@ -433,13 +433,13 @@ class Client(object):
             'User-Agent': '{User-Agent}',
             'Authorization': self.user_token
         }
-        self.get_base_xml_request()
-        self.get_base_xml_headers()
-        self.get_xml_url()
-        self.table_name = self.get_table_name()
-        self.fetch_field_info()
-        self.reports = self.get_reports()
-        self.valid_reports = self.get_valid_reports()
+        self._get_base_xml_request()
+        self._get_base_xml_headers()
+        self._get_xml_url()
+        self.table_name = self._get_table_name()
+        self._fetch_field_info()
+        self.reports = self._get_reports()
+        self.valid_reports = self._get_valid_reports()
         self.merge_dicts = {}
         logger.info(f'Created Client for table "{self.table_name}"')
         
@@ -447,8 +447,9 @@ class Client(object):
 
     
 
-    def get_filter(self,filter_criteria,record=False):
-        """Substitutes ids for labels using the quickbase query language.
+    def _get_filter(self,filter_criteria,record=False):
+        """
+        Substitutes ids for labels using the quickbase query language.
         I found using field ids to be cumbersome, this translates labels
         in to field ids.
 
@@ -480,7 +481,7 @@ class Client(object):
         return filter_criteria
 
 
-    def gen_filter_from_list(self, filter_list: list, 
+    def _gen_filter_from_list(self, filter_list: list, 
     filter_list_label: str) -> str:
         '''
         Translates filters with labels to filters with ids
@@ -489,12 +490,6 @@ class Client(object):
         join_str = f'"}}OR{{{filter_list_label}.EX."'
         return f'{where_str}{join_str.join(filter_list)}"}}'
          
-
-
-
-    
-
-    
 
 
     def get_data(self, report: str=None, columns: list=None, 
@@ -530,7 +525,7 @@ class Client(object):
             ].to_dict().items():
                 
                 body['select'] = v['fields']
-                body['where'] = self.get_filter(v['filter'],record=True)
+                body['where'] = self._get_filter(v['filter'],record=True)
                 if len(v['sortBy']) > 0:
                     body['sortBy'] = v['sortBy']
                 if len(v['groupBy']) > 0:
@@ -552,9 +547,7 @@ class Client(object):
                 raise ValueError('Can not specify where with a filter list')
             if not isinstance(report, type(None)):
                 raise ValueError('Can not specify where with a report')
-            body['where']  = self.get_filter(where)
-
-        
+            body['where']  = self._get_filter(where)
 
   
         invalid_kwargs = []
@@ -578,11 +571,11 @@ class Client(object):
                 iter = list(iter_np)
                 for i in iter:
                     slice = _slice_list(i,v)
-                    body['where'] = self.get_filter(self.gen_filter_from_list(
+                    body['where'] = self._get_filter(self._gen_filter_from_list(
                     slice,
                     k)
                     )
-                    df, metadata = self.json_request(
+                    df, metadata = self._json_request(
                     body,
                     'post',
                     'records',
@@ -596,7 +589,7 @@ class Client(object):
         else:
             df_list = []
             retrieved = 0 
-            df, metadata = self.json_request(
+            df, metadata = self._json_request(
             body,
             'post',
             'records',
@@ -609,7 +602,7 @@ class Client(object):
                 body['options'] = {"skip": retrieved}
                 remaining = metadata['totalRecords'] -  metadata['numRecords']
                 while remaining > 0:
-                    df, metadata = self.json_request(
+                    df, metadata = self._json_request(
                     body,
                     'post',
                     'records',
@@ -637,18 +630,19 @@ class Client(object):
 
 
 
-    def create_fields(self, field_dict: dict=None, 
+    def create_fields(self, field_dict: Union[dict,list]=None, 
     external_df: pd.DataFrame=None, ignore_errors: bool=False, 
-    appearsByDefault: bool=True) -> None:
+    appearsByDefault: bool=True) -> list[dict]:
         """
-        Creates a field on a quickbase table. Can create based on columns 
+        Creates fields on a quickbase table. Can create based on columns 
         in a DataFrame or based on a field_dict of desired attributes.
         
         Note that my DataFrame implementation depends on my having mapped a 
         pandas Data Type to an equivalent Quickbase Data type and the mapping 
         I have done is nowhere near exhaustive. If you want to be sure that a 
         field gets created when uploading a DataFrame, create it explicitly 
-        prior to uploading the DataFrame using a field_dict.
+        prior to uploading the DataFrame using a field_dict. Returns a list of 
+        created field dictionaries
         """
 
         type_dict = {
@@ -665,19 +659,25 @@ class Client(object):
         logger.info('Preparing to create fields')
 
 
-        
+        return_list = []
         if field_dict:
-            body = field_dict
-            if appearsByDefault == False:
-                body['appearsByDefault'] = False
-            response = self.json_request(
-            body,'post','fields','response'
-            )
-            logger.info(f'''Added field "{response['label']}"'''
-            f' to {self.table_name}'
-            )
-            self.fetch_field_info()    
-            return
+            if isinstance(field_dict, dict):
+                field_dict = [field_dict]
+            
+            for fd in field_dict:
+                body = fd
+                if appearsByDefault == False:
+                    body['appearsByDefault'] = False
+                response = self._json_request(
+                body,'post','fields','response'
+                )
+                logger.info(f'''Added field "{response['label']}"'''
+                f' to {self.table_name}'
+                )
+                return_list.append(response)
+                
+            self._fetch_field_info()    
+            return return_list
              
         if external_df is not None:
             self.dataframe = external_df.copy()
@@ -689,7 +689,9 @@ class Client(object):
             if col not in self.rename_dict.values()
         ]
 
+        
         if len(unknown_columns) > 0:
+            
             dtypes_dict = self.dataframe.dtypes.to_dict()
             unknown_dict = {
             str(k): str(v) for k, v in dtypes_dict.items(
@@ -717,12 +719,14 @@ class Client(object):
                     f'{error_string}'
                     )
                 else:
+                    
                     for k,v in counter_dict.items():
                         logger.warn(
                             f'Unknown Pandas datatype {v} for column {k},'
                             f' field not created'
                         )
                         unknown_dict.pop(k)
+                        
                     for k,v in unknown_dict.items():
   
                         if appearsByDefault == False:
@@ -730,16 +734,17 @@ class Client(object):
 
                         body['label'] = k
                         body['fieldType']=type_dict[v]
-                        response = self.json_request(
+                        response = self._json_request(
                         body,'post','fields','response'
                         )
+                        return_list.append(response)
                         logger.info(
                         f'''Added field "{response['label']}"'''
                         f' to {self.table_name}'
                         )
                         
-                    self.fetch_field_info()    
-                    return
+                    self._fetch_field_info()    
+                    return return_list
              
 
 
@@ -749,7 +754,9 @@ class Client(object):
                     f'Unknown Pandas datatype {v} for column {k},'
                     f' field not created'
                     )
+                return return_list
             else:
+                
                 for k,v in unknown_dict.items():
 
                     if appearsByDefault == False:
@@ -757,23 +764,26 @@ class Client(object):
 
                     body['label'] = k
                     body['fieldType']=type_dict[v]
-                    response = self.json_request(
+                    response = self._json_request(
                     body,'post','fields','response'
                     )
+                    return_list.append(response)
                     logger.info(
                     f'''Added field "{response['label']}"'''
                     f' to {self.table_name}'
                     )
-                self.fetch_field_info()
-                return         
+                self._fetch_field_info()
+                return return_list   
         else:
             
             logger.info('No unknown fields found')
+            return return_list
 
     def update_field(self, field_label: str, field_dict: dict=None,
-    **kwargs) -> None:
+    **kwargs) -> dict:
         '''
-        Update field attributes using field_dict or using key word arguments
+        Update field attributes using field_dict or using key word arguments.
+        Returns dict with field characteristics
         '''
 
 
@@ -815,7 +825,7 @@ class Client(object):
         body.update(kwargs)
         
 
-        response = self.json_request(
+        response = self._json_request(
         body,
         'post',
         'fields',
@@ -828,11 +838,12 @@ class Client(object):
             f'Updated field {self.inv_label_dict[field_label]} with'
             f' { {k: v for k, v in response.items() if k in body.keys()} }'
         )
-        self.fetch_field_info()
+        self._fetch_field_info()
+        return response
 
-    def delete_fields(self, field_labels: list) -> None:
+    def delete_fields(self, field_labels: list) -> list:
         '''
-        Delete a list of fields. Takes in field labels.
+        Delete a list of fields. Takes in field labels. Returns list of deleted field ids
         '''
 
         if not isinstance(field_labels,list):
@@ -859,19 +870,22 @@ class Client(object):
             err_str = ", ".join([f'"{b}"' for b in entered_built_ins])
             raise ValueError(f'Built in field(s) {err_str} can not be deleted')
 
-        response = self.json_request(body,'delete','fields','response')
+        response = self._json_request(body,'delete','fields','response')
+        deleted_field_ids = []
         for k, v in response.items():
             if k == 'deletedFieldIds':
-                t_list = [
+                deleted_field_ids = v
+                deleted_field_labels = [
                 self.rename_dict[d] for d in v
                 ]
-                logger.info(f'''Deleted field(s) "{'", "'.join(t_list)}"'''
+                logger.info(f'''Deleted field(s) "{'", "'.join(deleted_field_labels)}"'''
                 f' from {self.table_name}')
 
-        self.fetch_field_info() 
+        self._fetch_field_info() 
+        return deleted_field_ids
         
 
-    def slice_df(self, start_line: int,step: int=5000):
+    def _slice_df(self, start_line: int,step: int=5000):
         '''
         Return a slice of the Client's DataFrame to facilitate uploads
         '''
@@ -882,21 +896,25 @@ class Client(object):
 
     def post_data(self, external_df: pd.DataFrame=None, step: int=5000, 
     merge: str=None, create_if_missing: bool=False, 
-    exclude_columns: list=None, subset: list=None) -> None:
+    exclude_columns: list=None, subset: list=None) -> dict:
         """
-        Upload a DataFrame to a quickbase table
+        Upload a DataFrame to a quickbase table. Returns a dict with records processed,
+        created record ids, updated record ids and unchanged record ids
         """
 
         if  isinstance(external_df, pd.DataFrame):
             self.dataframe = external_df.copy()
         if exclude_columns:
-            self.dataframe.drop(labels=exclude_columns, axis=1, inplace=True)
+            self.dataframe.drop(labels=exclude_columns, 
+                                axis=1, 
+                                inplace=True)
         if subset:
             self.dataframe.drop(
             labels=[
             col for col in self.dataframe.columns
             if col not in subset and not merge],
-            axis=1, inplace=True
+            axis=1, 
+            inplace=True
             )
 
         if create_if_missing ==True:
@@ -939,8 +957,20 @@ class Client(object):
         unchanged = 0
         updated = 0
         failed = 0
+
+        id_lists = [
+            'createdRecordIds',
+            'unchangedRecordIds',
+            'updatedRecordIds'
+        ]
+        response_dict = {}
+
+        for id_list in id_lists:
+            response_dict[id_list] = []
+
+
         for i in iter :
-            slice = self.slice_df(i,step=step)
+            slice = self._slice_df(i,step=step)
             logger.info(
             f'Sending Insert/ Update Records API request {req_nr} '
             f'out of {req_total}')
@@ -956,7 +986,7 @@ class Client(object):
                 data["mergeFieldId"] = int(self.inv_label_dict[merge])
             
             
-            response = self.json_request(
+            response = self._json_request(
             data,
             'post',
             'records',
@@ -967,6 +997,9 @@ class Client(object):
             created += len(metadata['createdRecordIds'])
             unchanged += len(metadata['unchangedRecordIds'])
             updated += len(metadata['updatedRecordIds'])
+
+            for id_list in id_lists:
+                response_dict[id_list] += metadata[id_list]
       
             if response.status_code == 200:
                 logger.debug(f'Request {req_nr}: 0 no error')
@@ -993,15 +1026,19 @@ class Client(object):
                 f'{json.dumps(response.json())["description"]} \n')
             req_nr += 1
         
+        response_dict['totalNumberOfRecordsProcessed'] = processed
+        
 
         logger.info(f'Uploaded {processed} records to {self.table_name}, '
         f'created: {created}, unchanged: {unchanged}, updated: {updated}, '
         f'failed: {failed}'
         )
 
-    def delete_records(self, where: str=None, all_records: bool=False) -> None:
+        return response_dict
+
+    def delete_records(self, where: str=None, all_records: bool=False) -> dict:
         '''
-        Delete records from a Quickbase table
+        Delete records from a Quickbase table. Returns dict with number of records deleted
         '''
 
         if where == None:
@@ -1017,27 +1054,33 @@ class Client(object):
         elif where:
             body ={
             "from": self.table_id,
-            "where":  f"{self.get_filter(where)}"
+            "where":  f"{self._get_filter(where)}"
             }
                 
             
 
-        response = self.json_request(
+        response = self._json_request(
         body,
         'delete',
         'records',
         'response'
         )
+        
+        
 
         logger.info(
         f'Deleted {response["numberDeleted"]} records from {self.table_name}'
         )
 
+        return response
+
+        
 
 
 
 
-    def get_merge_dict(self, merge_field: str, try_internal: bool) -> None:
+
+    def _get_merge_dict(self, merge_field: str, try_internal: bool) -> None:
         """
         Creates a dictionary for use in uploading files
         """
@@ -1106,7 +1149,7 @@ class Client(object):
 
             
     def upload_files(self, field_label: str, file_dict: dict,
-    merge_field: str, try_internal: bool=True) -> None:
+    merge_field: str, try_internal: bool=True) -> list[dict[str,str]]:
         """
         Upload files to existing records, merging on a value in a unique field.
         file_dict is a dictionary  setup like so :
@@ -1117,6 +1160,7 @@ class Client(object):
          }
         }
         The merge field is provided separately as the label of the field.
+        Returns a list of dicts with record ids and update ids
         """
     
         request = self.base_xml_request
@@ -1129,9 +1173,12 @@ class Client(object):
                 )
        
         if merge_field not in self.merge_dicts.keys():
-            self.get_merge_dict(merge_field,try_internal)
+            self._get_merge_dict(merge_field,try_internal)
         
         uploaded_files = 0
+
+        return_list = []
+
         for k, v in file_dict.items():
             try:
                 request['rid'] = self.merge_dicts[merge_field][v['merge_value']]
@@ -1144,8 +1191,16 @@ class Client(object):
                 'filename': k}, v['file_str'])
             request['field'] = [request_field]
 
-            data = self.build_request(**request)
-            response = self.xml_request('API_EditRecord',data)
+            data = self._build_request(**request)
+            response = self._xml_request('API_EditRecord',data)
+            rid = response.xpath('//qdbapi/rid')[0].text
+            update_id = response.xpath('//qdbapi/update_id')[0].text
+
+            return_list.append({'rid': rid,
+                                'update_id': update_id,
+                                }
+                            )
             uploaded_files +=1
         
         logger.info(f'Uploaded {uploaded_files} files to {self.table_name}')
+        return return_list

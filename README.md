@@ -68,6 +68,13 @@
   </ol>
 </details>
 
+## Version 1.1.0
+* Added return values for post_data, upload_files, create_fields, delete_fields, update_field, delete_records
+* Added a ten second sleep before retrying JSON requests
+* create_fields now allows for manual multiple field creation by accepting a list of field dicts to the argument field_dict, previously multiple fields were only created if called within post_data using a DataFrame
+* Prefixed Client methods for internal use  with underscores
+
+
 ## Version 1.0.2
 * Fixed an issue with columns in get_data where specifying a column with only sub columns would cause an Exception
 * Added Type Hinting
@@ -251,13 +258,18 @@ _For more information on the query parameters, please refer to the [Documentatio
 #### subset: *list*
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A list of columns in your DataFrame you wish to be uploaded while excluding all others (except merge if specified)**
  
+#### Returns: dict
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Returns a dict with lists of created, updated and unchanged record ids as well as a count of processed records**
 
 \
-Will upload records to the table based on the DataFrame provided. Results are returned in logging.
+Will upload records to the table based on the DataFrame provided.
 
 ```
 my_table_client.post_data(external_df=df)
 ```
+
+
+
 
 
 ### create_fields
@@ -266,8 +278,8 @@ my_table_client.post_data(external_df=df)
 
 #### Parameters:
 
-#### field_dict: *dict*, (optional)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A Dictionary for field creation**
+#### field_dict: *list or dict*, (optional)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A dict or list of dicts for field creation**
 
 #### external_df: *dict*, (optional)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Create columns based on a DataFrame**
@@ -279,6 +291,8 @@ my_table_client.post_data(external_df=df)
 #### appearsByDefault: *bool*
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Whether or not this will be a default field**
 
+#### Returns: list
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Returns a list with a dict for each field created**
 
 Will create fields with the given arguments.
 
@@ -310,6 +324,9 @@ _For more examples, please refer to the [Documentation](https://developer.quickb
 #### \*\*kwargs:  (optional)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Accepts label, noWrap, bold, required, appearsByDefault, findEnabled, unique, fieldHelp, addToForms, properties**
 
+#### Returns: dict
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Returns a dict with updated field characteristics**
+
 Will update fields with the given arguments
 
 ```
@@ -330,6 +347,8 @@ _For more examples, please refer to the [Documentation](https://developer.quickb
 #### field_labels: *list*
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**A list of field labels corresponding to fields **
 
+#### Returns: list
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Returns a list of deleted field ids**
 
 Will delete the list of supplied fields
 
@@ -350,6 +369,9 @@ my_table_client.delete_fields(["Field1","Field2"])
 
 #### all_records: *bool*, (optional)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Delete all records from the table**
+
+#### Returns: dict
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Returns a dict indicating the number of records deleted**
 
 \
 Will delete indicated records from the table
@@ -387,6 +409,10 @@ my_table_client.delete_records(
 
 #### try_internal: *bool*
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Whether or not we consult the Client's DataFrame for merge values.**
+
+#### Returns: list
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Returns a list with a dict of record id and update id for each file uploaded**
+
 
 \
 Uploads files to the given file field based on a value in a unique field. 
