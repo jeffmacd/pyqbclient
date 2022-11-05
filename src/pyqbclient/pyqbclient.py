@@ -43,7 +43,7 @@ default_user_token = None
 
 def set_default(realm_hostname: str=None, user_token:str =None) -> None:
     '''
-    Set default realm hostname and uder token for use by the Client
+    Set default realm hostname and user token for use by the Client
     '''
     global default_realm_hostname
     global default_user_token
@@ -51,7 +51,7 @@ def set_default(realm_hostname: str=None, user_token:str =None) -> None:
     default_realm_hostname = realm_hostname
     default_user_token = user_token
 
-def _slice_list(start_line: int,filter_list: list):
+def _slice_list(start_line: int,filter_list: list) -> list:
     '''
     The Quickbase API allows filtering by 100 values, this enables that
     '''
@@ -885,7 +885,7 @@ class Client(object):
         return deleted_field_ids
         
 
-    def _slice_df(self, start_line: int,step: int=5000):
+    def _slice_df(self, start_line: int,step: int=5000) -> pd.DataFrame:
         '''
         Return a slice of the Client's DataFrame to facilitate uploads
         '''

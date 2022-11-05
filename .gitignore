@@ -7,3 +7,5 @@ pyproject.toml
 1.0.*/
 1.1.*/
 test*
+upload_steps
+iso_dir/
