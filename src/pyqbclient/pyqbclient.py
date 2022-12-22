@@ -101,16 +101,16 @@ class Client(object):
         self.retries = retries
     
     def _json_request(self, body: str, request_type: str,
-    api_type: str, return_type: str, sub_url: str=None) -> Union[requests.Response,
+    api_type: str, return_type: str, sub_url: str=None, load_as_json: bool = True) -> Union[requests.Response,
     pd.DataFrame, dict, Tuple[pd.DataFrame,dict]]:
         '''
-        Make a JSON request to the JSON API. This function is probably overloaded.
-        Too late now.        
+        Make a JSON request to the JSON API
         '''
 
         url =f'https://api.quickbase.com/v1/{api_type}'
         if  not isinstance(sub_url,type(None)):
             url += f'/{sub_url}'
+        
 
 
         for attempt in range(self.retries + 1):
@@ -143,8 +143,10 @@ class Client(object):
                         headers = self.headers
                         )
                     
-                
-                response = json.loads(r.text)
+                if load_as_json:
+                    response = json.loads(r.text)
+                else:
+                    response = r.text
                 
 
                 if request_type != 'get': 
@@ -417,7 +419,7 @@ class Client(object):
 
     def __init__(self, table_id: str, realm_hostname: str=None,
     user_token: str=None, retries: int=3, 
-    dataframe: pd.DataFrame=pd.DataFrame()) -> None:
+    dataframe: pd.DataFrame=pd.DataFrame()) -> Client:
         self.table_id = table_id
         self.base_params = {
             'tableId': self.table_id
@@ -456,7 +458,7 @@ class Client(object):
         Example: {My_Field_Label.EX.'My Value'} might become {6.EX.'My Value'}
         
         """
-
+        error_list = []
         pattern = re.compile(r'{(.*?)[.]')
         filter_list = []
         for m in re.finditer(pattern, filter_criteria):
@@ -469,15 +471,23 @@ class Client(object):
         if record ==False:
             for k in filter_list:
                 if k in filter_criteria:
-                    filter_criteria = filter_criteria.replace(
-                    k,str(self.inv_label_dict[k])
-                    )
+                    try:
+                        filter_criteria = filter_criteria.replace(
+                        k,str(self.inv_label_dict[k])
+                        )
+                    except KeyError:
+                        error_list.append(k)
+            if len(error_list) > 0:
+                raise ValueError(f'''Invalid field label(s) "{'", "'.join(error_list)}" '''
+                                 f'''found in filter for {self.table_name}''')
+
         else:
             for k in filter_list:
                 if k in filter_criteria:
                     filter_criteria = filter_criteria.replace(
                     k,str(self.rename_dict[k])
                     )
+        
         return filter_criteria
 
 
@@ -628,6 +638,128 @@ class Client(object):
         else:
             return result
 
+    def get_files(self, file_field: str, where: str= None, 
+    filter_list_dict: dict = None ) -> dict:
+        '''
+        Returns a dictionary with Field id 3 values as keys 
+        and base64 encoded files as values 
+        '''
+        body = {"from":self.table_id}
+        # Without a default sort order does not behave as expected
+        body['sortBy'] = [{'fieldId': 2, 'order': 'DESC'}]
+
+        record_label = self.field_data.loc[
+        self.field_data['id']==3,
+        'label'
+        ].to_string(index=False)
+
+        columns = [record_label, file_field ]
+        try:
+            body['select'] = [self.column_dict[c] for c in columns]
+        except KeyError as e:
+            raise ValueError(
+            f'Invalid Column {e} provided.'
+            )
+
+        if where:
+            if not isinstance(filter_list_dict, type(None)):
+                raise ValueError('Can not specify where with a filter list')
+            body['where']  = self._get_filter(where)
+
+        if isinstance(filter_list_dict, dict):
+            df_list = []
+            retrieved = 0 
+            try:
+                body['select'] += [self.column_dict[col] for col in filter_list_dict.keys()]
+            except KeyError as e:
+                raise ValueError(
+                f'Invalid Column {e} provided.'
+                )
+            
+
+            for k,v in filter_list_dict.items():
+
+                list_length = len(v)
+                iter_np = np.arange(0, list_length, 100)
+                iter = list(iter_np)
+                for i in iter:
+                    slice = _slice_list(i,v)
+                    body['where'] = self._get_filter(self._gen_filter_from_list(
+                    slice,
+                    k)
+                    )
+                    
+                    df, metadata = self._json_request(
+                    body,
+                    'post',
+                    'records',
+                    'dataframe',
+                    'query'
+                    )
+                    df_list.append(df)
+                    retrieved += metadata['numRecords']
+
+        else:
+            df_list = []
+            retrieved = 0 
+            df, metadata = self._json_request(
+            body,
+            'post',
+            'records',
+            'dataframe',
+            'query'
+            )
+            df_list.append(df)
+            retrieved = metadata['numRecords']
+            if metadata['totalRecords'] > metadata['numRecords']:
+                body['options'] = {"skip": retrieved}
+                remaining = metadata['totalRecords'] -  metadata['numRecords']
+                while remaining > 0:
+                    df, metadata = self._json_request(
+                    body,
+                    'post',
+                    'records',
+                    'dataframe',
+                    'query'
+                    )
+                    retrieved += metadata['numRecords']
+                    remaining = metadata['totalRecords'] - retrieved
+                    body['options'] = {"skip": retrieved}
+                    df_list.append(df)
+                   
+        result = pd.concat(df_list)
+        
+        return_dict = {}
+        if retrieved == 0:
+            logger.info(f'Found {retrieved} records from '
+                        f'{self.table_name} matching the filter criteria')
+            return return_dict
+        result.columns = result.columns.to_series().map(self.rename_dict)
+
+        url_column = f'{file_field} - url'
+
+        has_files = result.loc[result[url_column] != ''].copy()
+
+        has_file_count = len(has_files.index)
+        logger.info(f'Found {has_file_count} records from '
+                    f'{self.table_name} with files in the {file_field} field')
+        if has_file_count == 0:
+            return return_dict
+
+
+        record_list = has_files[record_label].tolist()
+        file_urls = has_files[url_column].tolist()
+        for index, url  in enumerate(file_urls):
+            url = url[1:]
+            file_str = self._json_request(None,
+                                          'get',
+                                          url,
+                                          'response',
+                                          load_as_json=False
+                                          )
+            return_dict[record_list[index]] = file_str
+
+        return return_dict
 
 
     def create_fields(self, field_dict: Union[dict,list]=None, 

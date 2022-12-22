@@ -17,12 +17,7 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-
+$~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$[![Contributors][contributors-shield]][contributors-url]  [![Forks][forks-shield]][forks-url]  [![Stargazers][stars-shield]][stars-url]   [![Issues][issues-shield]][issues-url]   [![Downloads][downloads-shield]][downloads-url]   [![LinkedIn][linkedin-shield]][linkedin-url]    
 
 
 <!-- PROJECT LOGO -->
@@ -67,6 +62,13 @@
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
+
+
+## Version 1.1.1
+* Added a function to download files
+* Changed a docstring
+* Added an error message for bad filter criteria
+
 
 ## Version 1.1.0
 * Added return values for post_data, upload_files, create_fields, delete_fields, update_field, delete_records
@@ -231,6 +233,50 @@ Note: When called without any arguments returns default fields for all records\
 _For more information on the quickbase query language, please refer to the [Documentation](https://help.quickbase.com/api-guide/componentsquery.html)_
 
 _For more information on the query parameters, please refer to the [Documentation](https://developer.quickbase.com/operation/runQuery)_
+
+
+### get_files
+**pyqbclient.Client.get_files(file_field: str, where: str= None,**
+**filter_list_dict: dict = None )**
+
+
+#### Parameters:
+
+#### file_field: *str*, 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The label of the field with the file you wish to download"**
+
+#### where: *str*, (optional)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Filter for queries using modified quickbase query language. Use the field label instead of the field ID, e.g. '{Record_ID#.EX.3}'**
+
+#### filter_list_dict: *dict*, (optional)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Query records based on a list of values. Takes a dictionary set up as below:**
+     {
+       'Field Label': ['Field_value_1','Field_value_2']
+     }
+
+
+
+#### Returns: Dict 
+\
+Function will return a dictionary with Field id 3 values as keys and base64 encoded files as values 
+
+
+```
+file_dict = my_table_client.get_files(filter_list_dict={'Record ID#': ['6225', '6224']})
+```
+\
+
+\
+_For more information on the quickbase query language, please refer to the [Documentation](https://help.quickbase.com/api-guide/componentsquery.html)_
+
+_For more information on the query parameters, please refer to the [Documentation](https://developer.quickbase.com/operation/runQuery)_
+
+
+
+
+
+
+
 
 
 ### post_data
@@ -490,16 +536,18 @@ Project Link: [https://github.com/jeffmacd/pyqbclient](https://github.com/jeffma
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/jeffmacd/pyqbclient.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/jeffmacd/pyqbclient.svg?style=flat
 [contributors-url]: https://github.com/jeffmacd/pyqbclient/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/jeffmacd/pyqbclient.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/jeffmacd/pyqbclient.svg?style=flat
 [forks-url]: https://github.com/jeffmacd/pyqbclient/network/members
-[stars-shield]: https://img.shields.io/github/stars/jeffmacd/pyqbclient.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/jeffmacd/pyqbclient.svg?style=flat
 [stars-url]: https://github.com/jeffmacd/pyqbclient/stargazers
-[issues-shield]: https://img.shields.io/github/issues/jeffmacd/pyqbclient.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/jeffmacd/pyqbclient.svg?style=flat
 [issues-url]: https://github.com/jeffmacd/pyqbclient/issues
 [license-shield]: https://img.shields.io/badge/License-MIT-yellow.svg
 [license-url]: https://github.com/jeffmacd/pyqbclient/blob/main/LICENSE
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/jeff-macdonald-37202722a/
 [product-screenshot]: images/screenshot.png
+[downloads-shield]: https://pepy.tech/badge/pyqbclient
+[downloads-url]: https://pepy.tech/project/pyqbclient
