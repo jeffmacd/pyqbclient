@@ -63,6 +63,13 @@ $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$[![Contributors][contribut
   </ol>
 </details>
 
+## Version 1.2.0
+* Added download_files function to client
+* Added future deprecation warning for get_files
+* Improved docstrings
+* Refactored multiple functions
+* Fixed bug in post_data where fields were created when subset was specified and field  was not in subset
+
 
 ## Version 1.1.1
 * Added a function to download files

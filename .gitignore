@@ -1,11 +1,12 @@
 *.code-workspace
 __pycache__/
 build/
-dist
+dist/
 pyqbclient.egg-info
 pyproject.toml
-1.0.*/
-1.1.*/
+1.*/
+htmlcov/
+.coverage
 test*
 upload_steps
 iso_dir/
