@@ -800,7 +800,7 @@ class Client(object):
         return_copy : bool, default True
             If True a copy of the result will be returned.
         filter_list_dict : dict, optional
-            A dictionary of lists where the key is the column name and the list is
+            A dictionary where the key is a field label and the value is
             a list of values to be filtered by.
             Will raise a ValueError if specified when report is specified.
         where : str, optional
@@ -966,7 +966,8 @@ class Client(object):
             consult the documentation for more information.
             If filter_list_dict is specified this argument is ignored.
         filter_list_dict : dict, optional
-            A dictionary of lists where the key is the column name and the list is
+            A dictionary where the key is a field label and the value is
+            a list of values to be filtered by.
 
         Returns
         -------
@@ -1047,7 +1048,7 @@ class Client(object):
             consult the documentation for more information.
             If filter_list_dict is specified this argument is ignored.
         filter_list_dict : dict, optional
-            A dictionary of lists where the key is the column name and the list is
+            A dictionary where the key is a field label and the value is
             a list of values to be filtered by.
 
         Returns
