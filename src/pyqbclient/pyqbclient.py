@@ -794,7 +794,6 @@ class Client(object):
         all_columns : bool, default False
             If True all fields will be returned.
             Will raise a ValueError if specified when report is specified.
-
         overwrite_df : bool, default True
             If True the Client's dataframe attribute will be overwritten with the
             result.
@@ -969,7 +968,6 @@ class Client(object):
         filter_list_dict : dict, optional
             A dictionary of lists where the key is the column name and the list is
 
-
         Returns
         -------
         list
@@ -1052,7 +1050,6 @@ class Client(object):
             A dictionary of lists where the key is the column name and the list is
             a list of values to be filtered by.
 
-
         Returns
         -------
         dict
@@ -1119,7 +1116,6 @@ class Client(object):
         field_dict : Union[dict,list], optional
             A dictionary or list of dictionaries with the field information.
             Consult the Quickbase documentation for more info.
-
         external_df : pd.DataFrame, optional
             A Pandas DataFrame. If passed, the fields will be created       
             based on the columns of the DataFrame.
@@ -1127,10 +1123,8 @@ class Client(object):
             'float64', 'int64', 'datetime64[ns]', 'object', 'bool',
             'int32', 'UInt32', 'Int32'.
             If the datatype is not known, the field will not be created.   
-
         ignore_errors : bool, default False
             If True, the function will not fail if field creation fails. 
-
         appearsByDefault : bool, default True
             If True, the field will appear by default in the Table.     
             Default is True.
