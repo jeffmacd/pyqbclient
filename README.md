@@ -242,10 +242,50 @@ _For more information on the quickbase query language, please refer to the [Docu
 _For more information on the query parameters, please refer to the [Documentation](https://developer.quickbase.com/operation/runQuery)_
 
 
+
+### download_files
+**pyqbclient.Client.download_files(file_field: str, where: str= None,**
+**filter_list_dict: dict = None )**
+
+#### Parameters:
+
+#### file_field: *str*, 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**The label of the field with the file you wish to download"**
+
+#### where: *str*, (optional)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Filter for queries using modified quickbase query language. Use the field label instead of the field ID, e.g. '{Record_ID#.EX.3}'**
+
+#### filter_list_dict: *dict*, (optional)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Query records based on a list of values. Takes a dictionary set up as below:**
+     {
+       'Field Label': ['Field_value_1','Field_value_2']
+     }
+
+
+
+#### Returns: List 
+\
+Function will return a list of dictionaries with Field ID 3 values, file names and base64 encoded file strings as values .
+
+
+```
+file_list = my_table_client.download_files(filter_list_dict={'Record ID#': ['6225', '6224']})
+```
+
+
+\
+_For more information on the quickbase query language, please refer to the [Documentation](https://help.quickbase.com/api-guide/componentsquery.html)_
+
+_For more information on the query parameters, please refer to the [Documentation](https://developer.quickbase.com/operation/runQuery)_
+
+
+
 ### get_files
 **pyqbclient.Client.get_files(file_field: str, where: str= None,**
 **filter_list_dict: dict = None )**
 
+> **Warning:**
+> Will be deprecated in version 1.3.0. Please use download_files.
 
 #### Parameters:
 
@@ -271,7 +311,7 @@ Function will return a dictionary with Field id 3 values as keys and base64 enco
 ```
 file_dict = my_table_client.get_files(filter_list_dict={'Record ID#': ['6225', '6224']})
 ```
-\
+
 
 \
 _For more information on the quickbase query language, please refer to the [Documentation](https://help.quickbase.com/api-guide/componentsquery.html)_
