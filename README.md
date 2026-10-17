@@ -63,6 +63,14 @@ $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$[![Contributors][contribut
   </ol>
 </details>
 
+## Version 1.2.1
+* Added support for pandas 2.x and 3.x
+* Replaced .loc assignments and inplace drops that raise on newer pandas
+* Fixed datetime uploads - date and datetime fields are now sent as ISO 8601 (UTC) instead of the epoch milliseconds pandas produces by default, which Quickbase rejects
+* Naive datetime columns are assumed to be UTC and raise a warning when posting
+* Added pytest tests and a tox matrix (Python 3.8-3.14, pandas 1.3.4-3.0)
+
+
 ## Version 1.2.0
 * Added download_files function to client
 * Added future deprecation warning for get_files

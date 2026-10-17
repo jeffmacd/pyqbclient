@@ -362,11 +362,10 @@ class Client(object):
         '''
 
         pared_fields = self.field_data.loc[:,['id','label',]].copy()
-        pared_fields.loc[:,'id'] = pared_fields.loc[:,'id'].astype(str) + '.value'
+        pared_fields['id'] = pared_fields['id'].astype(str) + '.value'
         label_dict = pared_fields.set_index('id').to_dict()['label']
         
         return label_dict 
-
 
     def _get_rename_dict(self) -> dict:
         '''
@@ -1140,6 +1139,8 @@ class Client(object):
         'float64': 'numeric',
         'int64': 'numeric',
         'datetime64[ns]': 'datetime',
+        # pandas 3 defaults datetime columns to microsecond resolution
+        'datetime64[us]': 'datetime',
         'object': 'text',
         'bool': 'checkbox',
         'int32': 'numeric',
@@ -1443,6 +1444,69 @@ class Client(object):
         return slice
 
 
+    def _encode_datetimes(self, df: pd.DataFrame) -> pd.DataFrame:
+        '''
+        Convert datetime columns to the strings Quickbase expects.
+
+        Quickbase date fields require 'YYYY-MM-DD' and datetime fields require
+        an ISO 8601 UTC string such as '2019-12-18T12:00:00.000Z'; the numeric
+        epoch that pandas' to_json emits by default is rejected by the API.
+
+        Timezone aware values are converted to UTC. Naive values are assumed to
+        be UTC and trigger a warning.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The DataFrame about to be uploaded.
+
+        Returns
+        -------
+        pd.DataFrame
+            A copy with datetime columns encoded as strings.
+        '''
+
+        datetime_columns = df.select_dtypes(
+        include=['datetime', 'datetimetz']
+        ).columns
+        if len(datetime_columns) == 0:
+            return df
+
+        field_types = dict(zip(
+        self.field_data['label'], self.field_data['fieldType']
+        ))
+
+        df = df.copy()
+        naive_columns = []
+        for column in datetime_columns:
+            series = df[column]
+            if series.dt.tz is not None:
+                series = series.dt.tz_convert('UTC')
+            else:
+                naive_columns.append(str(column))
+
+            mask = series.notna()
+            encoded = pd.Series(None, index=series.index, dtype='object')
+            if mask.any():
+                valid = series[mask]
+                if field_types.get(column) == 'date':
+                    encoded.loc[mask] = valid.dt.strftime('%Y-%m-%d')
+                else:
+                    encoded.loc[mask] = (
+                    valid.dt.strftime('%Y-%m-%dT%H:%M:%S.%f').str[:-3] + 'Z'
+                    )
+            df[column] = encoded
+
+        if naive_columns:
+            warnings.warn(
+            'Naive datetime column(s) '
+            f'{", ".join(repr(column) for column in naive_columns)} were '
+            'assumed to be UTC when posting to Quickbase', stacklevel=2
+            )
+
+        return df
+
+
     def post_data(self, external_df: pd.DataFrame=None, step: int=5000, 
     merge: str=None, create_if_missing: bool=False, 
     exclude_columns: list=None, subset: list=None) -> dict:
@@ -1485,23 +1549,22 @@ class Client(object):
         if  isinstance(external_df, pd.DataFrame):
             self.dataframe = external_df.copy()
         if exclude_columns:
-            self.dataframe.drop(labels=exclude_columns, 
-                                axis=1, 
-                                inplace=True)
+            self.dataframe = self.dataframe.drop(labels=exclude_columns, axis=1)
         if subset:
             
             labels_to_drop = [
             col for col in list(self.dataframe.columns)
             if col not in subset and col != merge
             ]
-            self.dataframe.drop(
+            self.dataframe = self.dataframe.drop(
             labels=labels_to_drop,
-            axis=1, 
-            inplace=True
+            axis=1
             )
 
         if create_if_missing ==True:
             self.create_fields(ignore_errors=True)
+
+        self.dataframe = self._encode_datetimes(self.dataframe)
 
         self.dataframe = self.dataframe.rename(
         columns=self.inv_label_dict
@@ -1524,7 +1587,7 @@ class Client(object):
             f'''"{'", "'.join(unknown_columns)}".'''
             ' Unknown columns were dropped'
             )
-            self.dataframe.drop(labels=unknown_columns, axis=1, inplace=True)
+            self.dataframe = self.dataframe.drop(labels=unknown_columns, axis=1)
 
         dflength = len(self.dataframe.index)
         iter_np = np.arange(0, dflength, step)
@@ -1552,7 +1615,7 @@ class Client(object):
             logger.info(
             f'Sending Insert/ Update Records API request {req_nr} '
             f'out of {req_total}')
-            df_json = slice.to_json(orient='records')
+            df_json = slice.to_json(orient='records', date_format='iso')
             df_json = json.loads(df_json)
             for l in df_json:
                 for k,v in l.items():
